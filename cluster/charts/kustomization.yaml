@@ -13,4 +13,3 @@ resources:
   - stakater.yaml
   - traefik.yaml
   - weaveworks-kured.yaml
-  - democratic-csi.yaml
