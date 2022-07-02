@@ -52,13 +52,13 @@ spec:
         # ### for the controller, manually mount from the remote NFS server on start,
         # ### so it can dynamically create PVC (the "crude" part)
         # ### ref: https://gist.github.com/admun/4372899f20421a947b7544e5fc9f9117
-        # lifecycle:
-        #   postStart:
-        #     exec:
-        #       command: ["/bin/sh", "-c", "mkdir -p /mnt/nfs; mount ${SECRET_TRUENAS_IP}:/mnt/ssdpool/csi/nfs/v /mnt/nfs"]
-        #   preStop:
-        #     exec:
-        #       command: ["/bin/sh","-c","umount /mnt/nfs"]
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "mkdir -p /mnt/nfs; mount ${SECRET_TRUENAS_IP}:/mnt/pool_01/k8s/nfs/v /mnt/nfs"]
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "umount /mnt/nfs"]
         resources:
         securityContext:
           allowPrivilegeEscalation: true
