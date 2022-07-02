@@ -32,7 +32,7 @@ spec:
     controller:
       enabled: true
       hostNetwork: false # set false if fails
-      hostIPC: true # set false if fails
+      hostIPC: false # set false if fails
       strategy: deployment
       externalAttacher:
         enabled: true
