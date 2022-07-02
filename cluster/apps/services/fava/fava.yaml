@@ -42,7 +42,7 @@ metadata:
   labels:
     app: fava
   annotations:
-    volume.beta.kubernetes.io/storage-class: "zsf-nfs"
+    volume.beta.kubernetes.io/storage-class: "zfs-nfs"
 spec:
   storageClassName: zfs-nfs
   accessModes:
