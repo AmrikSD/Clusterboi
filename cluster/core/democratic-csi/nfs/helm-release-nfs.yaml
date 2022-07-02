@@ -110,15 +110,20 @@ spec:
           operator: Exists
           # effect: NoSchedule
 
-    storageClasses:
-      - name: csi-truenas-nfs
-        defaultClass: false
-        reclaimPolicy: Retain # Delete, Retain
-        volumeBindingMode: Immediate
-        allowVolumeExpansion: true
-        parameters:
-          fsType: nfs
-        mountOptions:
-          - noatime
-          - nfsvers=4
-          - sec=sys
+      storageClasses:
+        - name: csi-truenas-nfs
+          defaultClass: false
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+          allowVolumeExpansion: true
+          parameters:
+            fsType: nfs
+          mountOptions:
+            - noatime
+            - nfsvers=3
+          secrets:
+            provisioner-secret:
+            controller-publish-secret:
+            node-stage-secret:
+            node-publish-secret:
+            controller-expand-secret:
