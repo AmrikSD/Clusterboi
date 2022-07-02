@@ -103,7 +103,7 @@ spec:
           # can be used to override defaults if necessary
           # the example below is useful for TrueNAS 12
           cli:
-            sudoEnabled: true
+            sudoEnabled: false
           #
           #  leave paths unset for auto-detection
           #  paths:
