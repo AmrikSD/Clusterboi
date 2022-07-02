@@ -42,9 +42,9 @@ metadata:
   labels:
     app: fava
   annotations:
-    volume.beta.kubernetes.io/storage-class: "csi-truenas-nfs"
+    volume.beta.kubernetes.io/storage-class: "zsf-nfs"
 spec:
-  storageClassName: csi-truenas-nfs
+  storageClassName: zfs-nfs
   accessModes:
     - ReadWriteOnce
   resources:
