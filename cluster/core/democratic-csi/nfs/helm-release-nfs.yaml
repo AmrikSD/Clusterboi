@@ -18,7 +18,7 @@ spec:
   values:
     csiDriver:
       name: "org.democratic-csi.truenas-nfs"
-      installCRD: false
+      installCRD: true
 
     driver:
       # see the driver-config-secret.yaml template for syntax
