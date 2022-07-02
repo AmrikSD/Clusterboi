@@ -22,12 +22,50 @@ spec:
 
     driver:
       # see the driver-config-secret.yaml template for syntax
-      existingConfigSecret: secret-democratic-csi-driver-config-nfs
       config:
         ## NOTE: if setting an existing secret you must still set `driver.config.driver`
         ## to the appropriate (equivalent) 'driver' value used in the secret,
         ## as the value is used by the chart for other purposes beyond secret creation
         driver: freenas-nfs
+        instance_id:
+        httpConnection:
+          protocol: http
+          host: "${SECRET_TRUENAS_IP}"
+          port: 80
+          username: "${SECRET_TRUENAS_USER}"
+          password: "${SECRET_TRUENAS_PASSWORD}"
+          allowInsecure: true
+        sshConnection:
+          host: "${SECRET_TRUENAS_IP}"
+          port: 22
+          username: "${SECRET_TRUENAS_USER}"
+          password: "${SECRET_TRUENAS_PASSWORD}"
+
+        zfs:
+          cli:
+            sudoEnabled: true
+          datasetProperties:
+            "org.freenas:description": "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}/{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+
+          datasetParentName: pool_01/k8s/n/v
+
+          detachedSnapshotsDatasetParentName: pool_01/k8s/n/s
+          datasetEnableQuotas: true
+          datasetEnableReservation: false
+          datasetPermissionsMode: "0777"
+          datasetPermissionsUser: 0
+          datasetPermissionsGroup: 0
+
+        nfs:
+          shareCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
+          shareHost: "${SECRET_TRUENAS_IP}"
+          shareAlldirs: false
+          shareAllowedHosts: []
+          shareAllowedNetworks: []
+          shareMapRootUser: root
+          shareMapRootGroup: wheel
+          shareMapallUser: ""
+          shareMapallGroup: ""
 
     controller:
       enabled: true
@@ -52,13 +90,13 @@ spec:
         # ### for the controller, manually mount from the remote NFS server on start,
         # ### so it can dynamically create PVC (the "crude" part)
         # ### ref: https://gist.github.com/admun/4372899f20421a947b7544e5fc9f9117
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "mkdir -p /mnt/nfs; mount ${SECRET_TRUENAS_IP}:/mnt/pool_01/k8s/nfs/v /mnt/nfs"]
-          preStop:
-            exec:
-              command: ["/bin/sh", "-c", "umount /mnt/nfs"]
+        # lifecycle:
+        #   postStart:
+        #     exec:
+        #       command: ["/bin/sh", "-c", "mkdir -p /mnt/nfs; mount ${SECRET_TRUENAS_IP}:/mnt/ssdpool/csi/nfs/v /mnt/nfs"]
+        #   preStop:
+        #     exec:
+        #       command: ["/bin/sh","-c","umount /mnt/nfs"]
         resources:
         securityContext:
           allowPrivilegeEscalation: true
