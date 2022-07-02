@@ -30,16 +30,16 @@ spec:
         instance_id:
         httpConnection:
           protocol: http
-          host: "${SECRET_TRUENAS_IP}"
+          host: ${SECRET_TRUENAS_IP}
           port: 80
-          username: "${SECRET_TRUENAS_USER}"
-          password: "${SECRET_TRUENAS_PASSWORD}"
+          username: ${SECRET_TRUENAS_USER}
+          password: ${SECRET_TRUENAS_PASSWORD}
           allowInsecure: true
         sshConnection:
-          host: "${SECRET_TRUENAS_IP}"
+          host: ${SECRET_TRUENAS_IP}
           port: 22
-          username: "${SECRET_TRUENAS_USER}"
-          password: "${SECRET_TRUENAS_PASSWORD}"
+          username: ${SECRET_TRUENAS_USER}
+          password: ${SECRET_TRUENAS_PASSWORD}
 
         zfs:
           cli:
@@ -58,7 +58,7 @@ spec:
 
         nfs:
           shareCommentTemplate: "{{ parameters.[csi.storage.k8s.io/pvc/namespace] }}-{{ parameters.[csi.storage.k8s.io/pvc/name] }}"
-          shareHost: "${SECRET_TRUENAS_IP}"
+          shareHost: ${SECRET_TRUENAS_IP}
           shareAlldirs: false
           shareAllowedHosts: []
           shareAllowedNetworks: []
