@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fava-deployment
+  namespace: fava
+  labels:
+    app: fava
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fava
+  template:
+    metadata:
+      labels:
+        app: fava
+    spec:
+      containers:
+        - name: fava
+          image: wypejo/fava
+          ports:
+            - name: web
+              containerPort: 5000
+          volumeMounts:
+            - name: fava-storage
+              mountPath: /data/
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: fava-storage
+          persistentVolumeClaim:
+            claimName: fava-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fava-claim
+  namespace: fava
+  labels:
+    app: fava
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "csi-truenas-nfs"
+spec:
+  storageClassName: csi-truenas-nfs
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fava-web-service
+  namespace: fava
+spec:
+  selector:
+    app: fava
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      name: web
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fava-ingress
+  namespace: fava
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_DOMAIN}"
+    external-dns/is-public: "false"
+    hajimari.io/enable: "true"
+    hajimari.io/appName: "Fava"
+    hajimari.io/icon: "cash-multiple"
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  tls:
+    - secretName: fava-tls
+      hosts:
+        - "fava.${SECRET_DOMAIN}"
+  rules:
+    - host: "fava.${SECRET_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fava-web-service
+                port:
+                  number: 5000
