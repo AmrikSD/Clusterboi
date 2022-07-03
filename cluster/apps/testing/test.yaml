@@ -35,36 +35,6 @@ spec:
               mountPath: "/mnt"
       volumes:
         - name: nfs
-          persistentVolumeClaim:
-            claimName: nfs
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nfs
-  namespace: test
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: ""
-  resources:
-    requests:
-      storage: 100Mi
-  volumeName: nfs
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs
-  namespace: test
-spec:
-  capacity:
-    storage: 100Gi
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    server: 10.2.1.2
-    path: "/mnt/pool_01/Downloads"
-  mountOptions:
-    - noatime
-    - nfsvers=3
+          nfs:
+            server: ${SECRET_NAS_IP}
+            path: "/mnt/pool_01/Downloads"
