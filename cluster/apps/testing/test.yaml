@@ -10,7 +10,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nfs-busybox
-  namesace: test
+  namespace: test
 spec:
   replicas: 2
   selector:
