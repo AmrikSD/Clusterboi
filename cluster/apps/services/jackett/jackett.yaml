@@ -1,0 +1,137 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jackett-env
+  namespace: media
+data:
+  TZ: ${TIMEZONE}
+  PUID: "1000"
+  PGID: "1000"
+  AUTO_UPDATE: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jackett-deployment
+  namespace: media
+  labels:
+    app: jackett
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jackett
+  template:
+    metadata:
+      labels:
+        app: jackett
+    spec:
+      containers:
+        - name: jackett
+          image: linuxserver/jackett:latest
+          env:
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: jackett-env
+                  key: TZ
+            - name: PUID
+              valueFrom:
+                configMapKeyRef:
+                  name: jackett-env
+                  key: PUID
+            - name: PGID
+              valueFrom:
+                configMapKeyRef:
+                  name: jackett-env
+                  key: PGID
+            - name: AUTO_UPDATE
+              valueFrom:
+                configMapKeyRef:
+                  name: jackett-env
+                  key: AUTO_UPDATE
+          ports:
+            - name: web
+              containerPort: 9117
+          volumeMounts:
+            - name: jackett-config
+              mountPath: /config
+            - name: jackett-download
+              mountPath: /downloads
+          resources:
+            limits:
+              cpu: 256m
+              memory: 512Mi
+      volumes:
+        - name: jackett-download
+          nfs:
+            server: 10.2.1.2
+            path: "/mnt/pool_01/Downloads"
+        - name: jackett-config
+          persistentVolumeClaim:
+            claimName: jackett-config-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jackett-config-claim
+  namespace: media
+  labels:
+    app: jackett
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "freenas-nfs-csi"
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jackett-web-service
+  namespace: media
+spec:
+  externalTrafficPolicy: Local
+  selector:
+    app: jackett
+  ports:
+    - protocol: UDP
+      port: 80
+      targetPort: 9117
+      name: jackett-web
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jackett-ingress
+  namespace: media
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_DOMAIN}"
+    external-dns/is-public: "false"
+    hajimari.io/enable: "true"
+    hajimari.io/appName: "jackett"
+    hajimari.io/icon: "dns"
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  tls:
+    - secretName: jackett-tls
+      hosts:
+        - "jackett.${SECRET_DOMAIN}"
+  rules:
+    - host: "jackett.${SECRET_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jackett-web-service
+                port:
+                  number: 80
