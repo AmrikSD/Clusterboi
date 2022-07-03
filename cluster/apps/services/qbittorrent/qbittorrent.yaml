@@ -6,8 +6,8 @@ metadata:
   namespace: services
 data:
   TZ: ${TIMEZONE}
-  PUID: "1000"
-  PGID: "1000"
+  PUID: "0"
+  PGID: "0"
   WEBUI_PORT: "8080"
 ---
 apiVersion: apps/v1
