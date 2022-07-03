@@ -66,4 +66,5 @@ spec:
     server: 10.2.1.2
     path: "/mnt/pool_01/Downloads"
   mountOptions:
-    - nfsvers=4.2
+    - noatime
+    - nfsvers=3
