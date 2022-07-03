@@ -93,7 +93,7 @@ spec:
   selector:
     app: sonarr
   ports:
-    - protocol: TCP
+    - protocol: UDP
       port: 80
       targetPort: 8989
       name: sonarr-web
