@@ -1,0 +1,130 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: radarr-env
+  namespace: services
+data:
+  TZ: ${TIMEZONE}
+  PUID: "1000"
+  PGID: "1000"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr-deployment
+  namespace: services
+  labels:
+    app: radarr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: radarr
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      containers:
+        - name: radarr
+          image: linuxserver/radarr:latest
+          env:
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: radarr-env
+                  key: TZ
+            - name: PUID
+              valueFrom:
+                configMapKeyRef:
+                  name: radarr-env
+                  key: PUID
+            - name: PGID
+              valueFrom:
+                configMapKeyRef:
+                  name: radarr-env
+                  key: PGID
+          ports:
+            - name: web
+              containerPort: 7878
+          volumeMounts:
+            - name: radarr-config
+              mountPath: /config
+            - name: radarr-download
+              mountPath: /Plex
+          resources:
+            limits:
+              cpu: 256m
+              memory: 512Mi
+      volumes:
+        - name: radarr-download
+          nfs:
+            server: 10.2.1.2
+            path: "/mnt/pool_01/Plex"
+        - name: radarr-config
+          persistentVolumeClaim:
+            claimName: radarr-config-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radarr-config-claim
+  namespace: services
+  labels:
+    app: radarr
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "freenas-nfs-csi"
+spec:
+  storageClassName: freenas-nfs-csi
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: radarr-web-service
+  namespace: services
+spec:
+  externalTrafficPolicy: Local
+  selector:
+    app: radarr
+  ports:
+    - name: radarr-web
+      port: 80
+      targetPort: 7878
+  type: LoadBalancer
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radarr-ingress
+  namespace: services
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    external-dns.alpha.kubernetes.io/target: "ipv4.${SECRET_DOMAIN}"
+    external-dns/is-public: "false"
+    hajimari.io/enable: "true"
+    hajimari.io/appName: "radarr"
+    hajimari.io/icon: "dns"
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+spec:
+  tls:
+    - secretName: radarr-tls
+      hosts:
+        - "radarr.${SECRET_DOMAIN}"
+  rules:
+    - host: "radarr.${SECRET_DOMAIN}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: radarr-web-service
+                port:
+                  number: 80
