@@ -59,14 +59,8 @@ spec:
           fsType: nfs
           #csi.storage.k8s.io/fstype: nfs
         mountOptions:
-          - nfsvers=4.2
-          - tcp
-          - intr
-          - hard
+          - nfsvers=3
           - noatime
-          - nodiratime
-          - rsize=1048576
-          - wsize=1048576
         secrets:
           provisioner-secret:
           controller-publish-secret:
