@@ -19,6 +19,11 @@ spec:
       containers:
         - name: fava
           image: wypejo/fava
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  ['/bin/sh', '-c', 'bean-example > /data/example.beancount']
           ports:
             - name: web
               containerPort: 5000
