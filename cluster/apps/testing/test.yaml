@@ -39,6 +39,19 @@ spec:
             claimName: nfs
 ---
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 100Mi
+  volumeName: nfs
+---
+apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: nfs
