@@ -44,6 +44,8 @@ metadata:
   name: nfs
   namespace: test
 spec:
+  capacity:
+    storage: 100Gi
   accessModes:
     - ReadWriteMany
   nfs:
