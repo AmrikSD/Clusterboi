@@ -36,5 +36,5 @@ spec:
       volumes:
         - name: nfs
           nfs:
-            server: ${SECRET_NAS_IP}
+            server: 10.2.1.2
             path: "/mnt/pool_01/Downloads"
